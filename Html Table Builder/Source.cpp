@@ -54,7 +54,7 @@ string ReadFile()
 
 	if (ifstream(path))
 	{
-		cout << "Begin reading INPUT.TXT" << endl;
+		cout << "**LOG Code: ReadFile**Begin reading INPUT.TXT" << endl;
 		ifstream f(path);
 		string line{ "" };
 
@@ -62,11 +62,11 @@ string ReadFile()
 		{
 			result += line;
 		}
-		cout << "INPUT.TXT sucessfully read";
+		cout << "**LOG Code: ReadFile**INPUT.TXT sucessfully read"<<endl;
 	}
 	else
 	{
-		cout << "Error: File input.txt doesn't exist! Create it and fill it with html code to use!" << endl;
+		cout << "**ERROR Code: ReadFile** File input.txt doesn't exist! Create it and fill it with html code to use!" << endl;
 		result = "null";
 	}
 
@@ -79,11 +79,79 @@ string AskTarget()
 {
 	string target;
 	do {
-		cout << "Insert the target tag where the program have to began to read: ";
+		cout << "Insert the target tag (no < >) where the program have to began to read: ";
 		getline(cin, target);
-	} while (target.find("<") == string::npos || target.find(">") == string::npos);
+	} while (target.find("<") != string::npos && target.find(">") != string::npos);
 
 	return target;
+}
+
+// analizza un tag e trova di che tipo e' e restituisci l'oppsto
+string CloseTag(const string& target, const vector<Tag>& list) 
+{
+	bool found = false;
+
+	for (auto t : list)
+	{
+		if (target.find(t.value) != string::npos)
+		{ 
+			found = true;
+			return "</" + t.value + ">";
+		}
+	}
+
+	if (!found)
+	{
+		cout << "**ERROR Code: CloseTag** Unknown tag: " << target << endl<< "Maybe close tag is: </"<<target<<">"<<endl;
+		return "</" + target + ">";
+		
+	}
+}
+
+
+//riduce la stringa al blocco interessato da analizzare
+string targetString(const string& begin, const vector<Tag>& kt, const string& FC)
+{   
+
+	string closeT = CloseTag(begin, kt); // restituisce il tag di chiusura opposto a quello inserito
+
+	int InitPos = FC.find(begin);
+	int EndPos = FC.find(closeT);
+
+	//valutazione dei risultati delle ricerche
+	if (InitPos == string::npos)
+	  {
+		  cout << "**ERROR Code: TargetString** can't find: " << begin << endl;
+	  }
+
+	if (EndPos == string::npos)
+	{
+		cout << "**ERROR Code: TagetString** can't find: " << begin << endl;
+
+	}
+	if ((EndPos == string::npos || InitPos == string::npos) || (EndPos == string::npos && InitPos == string::npos))
+	{
+		return "null";
+	}
+
+	if (EndPos != string::npos && InitPos != string::npos) // se non ci sono errori copia la stringa da dove hai trovato il primo tag a dove hai trovato il secondo
+	{
+		string result;
+		bool copy = false;
+		cout << endl << "**DEBUG Code: TargetString** Begin: " << InitPos << " End: " << EndPos << endl << endl;
+		for (int i = InitPos + begin.length() +1 ; i < EndPos; i++) // nella copia elimina tag di apertura
+		{
+			if (FC[i] == '<')
+			{
+				copy = true;
+			}
+			if (copy)
+			{
+				result += FC[i];
+			}
+		}
+		return result;
+	}
 }
 
 
@@ -92,10 +160,28 @@ int main()
 	vector<Tag> KnownTags;
 	string FileContent;
 	string TBegin{};
+	string Content;
 
 	DefineTableTags(KnownTags);
 
 	FileContent = ReadFile();
-	TBegin = AskTarget();
+	cout<<endl<<"**DEBUG** Content: " << FileContent<<endl<<endl;
+
+	if (FileContent != "null")
+	{
+		TBegin = AskTarget();
+		Content = targetString(TBegin, KnownTags, FileContent);
+		if (Content != "null")
+		{
+			cout << endl << "**DEBUG** TargetList: " << Content << endl << endl;
+			FileContent= "";
+		}
+
+	}
+
+
+	char c;
+	cout << "Press a button to exit (letter/number + escape) ";
+	cin >> c;
 
 }
