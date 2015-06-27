@@ -15,5 +15,7 @@ public:
 	~Tag();
 
 	void push(char item);
+
+	void cleardata();
 };
 

@@ -18,3 +18,8 @@ void Tag::push(char item) //aggiunge il carattere al valore
 	value += item;
 }
 
+void Tag::cleardata()
+{
+	value = "";
+}
+
