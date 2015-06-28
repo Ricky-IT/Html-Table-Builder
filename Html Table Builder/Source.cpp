@@ -24,30 +24,35 @@ using namespace std;
 //definisce tutti i tag html che riguardano le tabelle
 void DefineTableTags(vector<Tag>& kT)
 {
-	Tag t{ "table", 't' };
+	Tag t{ "table", 'h' };
 	kT.push_back(t);
 
-	t = Tag{ "/table", 't' };
+	t = Tag{ "/table", 'h' };
 	kT.push_back(t);
 
-	t = Tag{ "tr", 't' };
+	t = Tag{ "tr", 'h' };
 	kT.push_back(t);
 
-	t = Tag{ "/tr", 't' };
+	t = Tag{ "/tr", 'h' };
 	kT.push_back(t);
 
-	t = Tag{ "th", 't' };
+	t = Tag{ "th", 'h' };
 	kT.push_back(t);
 
-	t = Tag{ "/th", 't' };
+	t = Tag{ "/th", 'h' };
 	kT.push_back(t);
 
-	t = Tag{ "td", 't' };
+	t = Tag{ "td", 'h' };
 	kT.push_back(t);
 
-	t = Tag{ "/td", 't' };
+	t = Tag{ "/td", 'h' };
 	kT.push_back(t);
 
+	t = Tag{ "/tbody", 'h' };
+	kT.push_back(t);
+
+	t = Tag{ "tbody", 'h' };
+	kT.push_back(t);
 }
 
 //legge il file input.txt
@@ -84,7 +89,8 @@ string AskTarget()
 {
 	string target;
 	do {
-		cout << "Insert the target tag (no < >) where the program have to began to read: ";
+		cout << "Insert the target tag (no < >) where the program have to began to read:"<<endl;
+		cout << "**NOTE** If there is a <tbody> tag, use it istead of <table> (using <table> may cause some data los!)" << endl;
 		getline(cin, target);
 	} while (target.find("<") != string::npos && target.find(">") != string::npos);
 
@@ -225,17 +231,33 @@ int GetLayout(vector<string>& lay, const string& ct, const vector<Tag>& kt)
 
 
 
+void SplitString(const string& tar, vector<string>& WTP, bool comma_split)
+{
+	string temp;
+	stringstream ss{ tar};
+	if (!comma_split)
+	{
+		while (ss >> temp)
+		{
+			WTP.push_back(temp);
+		}
+	}
+	if (comma_split)
+	{
+		while (getline(ss, temp, ';')) 
+		{
+			WTP.push_back(temp);
+		}
+	}
+}
+
 //restituisce il numeri di righe e le righe
 int getRows(const string& target, vector<string>& WTP)
 {
 	vector<string> split;
-	string temp;
-	stringstream ss{ target };
-	while (ss>>temp)
-	{
-		split.push_back(temp);
-	}
-	 
+	SplitString(target, split, false);
+	string temp{};
+
 	int rows{ 0 };
 	bool write = false;
 	temp.clear();
@@ -302,7 +324,7 @@ void SaveCleanData(const vector<string>& layout, const vector<vector<string>>& t
 	ofstream CleanFile;
 	CleanFile.open("CleanData.txt");
 	CleanFile << "//Output File of Html Table builder\n";
-	CleanFile << "//Developed by _Ricky\n";
+	CleanFile << "//\n";
 	CleanFile << "//Warning this app can't handle tables with empty cells or images!!\n";
 	CleanFile << "//\n";
 	CleanFile << "Table layout:\n";
@@ -330,6 +352,183 @@ void SaveCleanData(const vector<string>& layout, const vector<vector<string>>& t
 	cout << "**LOG** Clean data was wrote into CleanData.txt" << endl;
 }
 
+
+// chiede all'utente da che tag vuole che il programma legga
+string AskNewLayout(vector<string>& layCurrent)
+{
+	string target;
+	do {
+		cout << "Current Layout: ";
+		for (auto e : layCurrent)
+		{
+			cout << e << " ";
+		}
+		cout << endl;
+
+		cout << endl<<"Insert a new layout:" << endl;
+		cout << "**NOTE** Layout MUST be: <new layout name>=<old layout name>(+\"Text\"+<another old layout name>+\"More Text\"). Use *none to create a empty column); and so on!" << endl;
+		cout << "**NOTE** In new layout you MUST NOT use spaces!!" << endl;
+		getline(cin, target);
+	} while (target.find("<") != string::npos && target.find(">") != string::npos && target.find(";") != string::npos);
+
+	return target;
+}
+
+//valuta il nuovo layout inserito ## h - tag html / l - layout / n - layout nuovo / o - layout vecchio / t - testo ##
+void EvaluateLayout(const string& target, vector<vector<Tag>>& LayInfo)
+{
+	vector<string> nwLay;
+	SplitString(target, nwLay, true);
+	bool text = false;
+	Tag temp{"",'o'};
+	vector<Tag> line;
+
+	for (auto item: nwLay)
+	{
+		for (int i = 0; i < item.length(); i++)
+		{
+			if (item[i] == '\"')
+			{
+				text = !text;
+				//cout << "Text: " << text << endl;
+			}
+			
+
+			if (text)
+			{
+				temp.type = 't';
+			}
+
+
+			if (item[i] != '\"' && item[i] != '+' && item[i] != '=')
+			{
+				temp.push(item[i]);
+				//cout << "Temp.push: " <<item[i] << endl;
+			}
+
+			if (item[i] == '=')
+			{
+				temp.type = 'n';
+				line.push_back(temp);
+				//cout << "Pushed: " << temp.value << endl;
+				temp.cleardata();
+				temp.type = 'o';
+
+			}
+
+			if (item[i] == '+' || i + 1 >= item.length())
+			{
+				line.push_back(temp);
+				//cout << "pushed 2: " << temp.value << endl;
+				temp.cleardata();
+				temp.type = 'o';
+
+			}
+
+		}
+		//cout << "Push LINE" << endl;
+		LayInfo.push_back(line);
+		line.clear();
+	}
+
+
+	cout << "**DEBUG New Layout Info**" << endl;
+	for (auto line : LayInfo)
+	{
+		for (auto item : line)
+		{
+			cout << "-" << item.value <<"  Tipo: "<< item.type<< "-   ";
+		}
+		cout << endl<<endl;
+	}
+
+}
+
+//scrive il file output.html
+void  WriteOutPut(vector<vector<Tag>>& LayInfo, vector<vector<string>>& data, vector<string>& Olay)
+{
+	ofstream Output;
+	Output.open("Output.html");
+	Output << "<html><head><title>Html Builed Table</title></head><body>"<<endl<<endl;
+	Output << "<table>" << endl;
+	string templ{};
+
+	for (auto el : LayInfo)
+	{
+		Output << "<th>" + el[0].value + "</th>" << endl;
+	}
+
+	for (int i = 0; i < data.size(); i++)
+	{
+		Output << "<tr>" << endl;
+		for (auto line : LayInfo) // per ogni elemento del nuovo layout
+		{
+			templ += "<td>";
+			for (auto el : line) // leggi ogni linea
+			{
+
+				//cout << "Lunghezza: " << line.size() << endl;
+
+				if (el.type != 'n')
+				{
+					
+					//cout << "NewLine" << endl;
+					if (el.type == 't') // se nella line ec'e un testo aggiungilo
+					{
+						templ += el.value;
+						//cout << "Aggiunto testo: " << el.value<<endl;
+					}
+					if (el.type == 'o') // se nella linea c'e un richiamo al vecchio layout
+					{
+						int pos{ -1 };
+						if (el.value != "*none")
+						{
+							for (int j = 0; j < Olay.size(); j++) // cercalo nel vecchio layout
+							{
+								if (Olay[j] == el.value) // se lo trovi ricardati la sua posizione
+								{
+									pos = j;
+								}
+
+
+							}
+						}
+						else
+						{
+							pos = -2;
+							cout << "Empty column" << endl;
+						}
+
+						if (pos != -1 && pos != -2)
+						{
+							templ += data[i][pos];
+							//cout << "Aggiunto " << data[i][pos] << endl;
+						}
+						if (pos == -1)
+						{
+							cout << "**ERROR** Cant find reference: " << el.value << endl;
+						}
+					}
+
+
+				}
+
+			}
+			templ += "</td>\n";
+			//cout << "Riga a fine ciclo linea: "<<templ << endl;
+		}
+		Output << templ;
+		Output << "</tr>" << endl;
+		templ = "";
+	}
+
+	Output <<"</table>" << endl;
+	Output << endl << endl << "</body></html>";
+	Output.close();
+	cout << "Table result has been written in output.html" << endl;
+}
+
+
 int main()
 {
 	vector<Tag> KnownTags;
@@ -339,6 +538,8 @@ int main()
 	vector<string> layout;
 	vector<vector<string>> Table;
 	vector<string> rows;
+
+	vector<vector<Tag>> LayInfo;
 
 	DefineTableTags(KnownTags);
 
@@ -364,6 +565,10 @@ int main()
 		CollectData(Table, rows);
 
 		SaveCleanData(layout, Table);
+		string newLay = AskNewLayout(layout);
+		EvaluateLayout(newLay, LayInfo);
+
+		WriteOutPut(LayInfo,Table,layout);
 
 
 	}
