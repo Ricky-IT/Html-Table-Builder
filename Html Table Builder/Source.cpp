@@ -1,8 +1,8 @@
 //***********************************************************************************************************************
-//  
+//
 //  Html Table Builder
 //  Developed by _Ricky
-//  
+//
 //  Desc: Read html code from input.txt (next to exe file) analize it and create a new html table
 //
 //  **WARNING**
@@ -16,6 +16,7 @@
 #include "Tag.h"
 #include "fstream"
 #include "sstream"
+#include "ctype.h"
 
 using namespace std;
 
@@ -50,7 +51,7 @@ void DefineTableTags(vector<Tag>& kT)
 
 	t = Tag{ "/tbody", 'h' };
 	kT.push_back(t);
-
+	 
 	t = Tag{ "tbody", 'h' };
 	kT.push_back(t);
 }
@@ -72,7 +73,7 @@ string ReadFile()
 		{
 			result += line;
 		}
-		cout << "**LOG Code: ReadFile**INPUT.TXT sucessfully read"<<endl;
+		cout << "**LOG Code: ReadFile**INPUT.TXT sucessfully read" << endl;
 	}
 	else
 	{
@@ -89,7 +90,7 @@ string AskTarget()
 {
 	string target;
 	do {
-		cout << "Insert the target tag (no < >) where the program have to began to read:"<<endl;
+		cout << "Insert the target tag (no < >) where the program have to began to read:" << endl;
 		cout << "**NOTE** If there is a <tbody> tag, use it istead of <table> (using <table> may cause some data los!)" << endl;
 		getline(cin, target);
 	} while (target.find("<") != string::npos && target.find(">") != string::npos);
@@ -98,14 +99,14 @@ string AskTarget()
 }
 
 // analizza un tag e trova di che tipo e' e restituisci l'oppsto
-string CloseTag(const string& target, const vector<Tag>& list) 
+string CloseTag(const string& target, const vector<Tag>& list)
 {
 	bool found = false;
 
 	for (auto t : list)
 	{
 		if (target.find(t.value) != string::npos)
-		{ 
+		{
 			found = true;
 			return "</" + t.value + ">";
 		}
@@ -113,16 +114,16 @@ string CloseTag(const string& target, const vector<Tag>& list)
 
 	if (!found)
 	{
-		cout << "**WARNING** Unknown tag: " << target << endl<< "**WARNING** Maybe close tag is: </"<<target<<">"<<endl;
+		cout << "**WARNING** Unknown tag: " << target << endl << "**WARNING** Maybe close tag is: </" << target << ">" << endl;
 		return "</" + target + ">";
-		
+
 	}
 }
 
 
 //riduce la stringa al blocco interessato da analizzare
-string targetString(const string& begin, const vector<Tag>& kt, const string& FC)
-{   
+string targetString(const string& begin, const vector<Tag>& kt, const string& FC, int& lung)
+{
 
 	string closeT = CloseTag(begin, kt); // restituisce il tag di chiusura opposto a quello inserito
 
@@ -131,9 +132,9 @@ string targetString(const string& begin, const vector<Tag>& kt, const string& FC
 
 	//valutazione dei risultati delle ricerche
 	if (InitPos == string::npos)
-	  {
-		  cout << "**ERROR Code: TargetString** can't find: " << begin << endl;
-	  }
+	{
+		cout << "**ERROR Code: TargetString** can't find: " << begin << endl;
+	}
 
 	if (EndPos == string::npos)
 	{
@@ -150,7 +151,7 @@ string targetString(const string& begin, const vector<Tag>& kt, const string& FC
 		string result;
 		bool copy = false;
 		cout << endl << "**DEBUG Code: TargetString** Begin: " << InitPos << " End: " << EndPos << endl << endl;
-		for (int i = InitPos + begin.length() +1 ; i < EndPos; i++) // nella copia elimina tag di apertura
+		for (int i = InitPos + begin.length() + 1; i < EndPos; i++) // nella copia elimina tag di apertura
 		{
 			if (FC[i] == '<')
 			{
@@ -161,6 +162,9 @@ string targetString(const string& begin, const vector<Tag>& kt, const string& FC
 				result += FC[i];
 			}
 		}
+
+		lung = EndPos - InitPos + closeT.length();
+
 		return result;
 	}
 }
@@ -170,14 +174,20 @@ string targetString(const string& begin, const vector<Tag>& kt, const string& FC
 void GetData(vector<string>& WTP, const string& data)
 {
 	Tag temp{ "", 'd' };
-
-	bool write;
+	int timer{ 0 };
+	bool write = false;
 	for (int i = 0; i < data.length(); i++)
 	{
 		if (data[i] == '<')
 		{
 			write = false;
 		}
+		// controlla che se è presente <td></td> aggiunge un dato vuoto
+		if (data[i] == '<' && data[i + 1] == 't' && data[i + 2] == 'd' && data[i + 3] == '>' && data[i + 4] == '<' && data[i + 5] == '/' && data[i + 6] == 't' && data[i + 7] == 'd' && data[i + 8] == '>')
+		{
+			WTP.push_back("");
+		}
+
 
 		if (write)
 		{
@@ -185,9 +195,26 @@ void GetData(vector<string>& WTP, const string& data)
 
 			if (data[i + 1] == '<')
 			{
-				if (temp.value.find_first_not_of(' ') != string::npos) // controlla che la stringa non sia solo spazi
+				bool space = true;
+				/*for (auto el : temp.value)
+				{
+					if (!isspace(el))
+					{
+						space = false;
+					}
+				
+
+				}*/
+
+				if (temp.value.find_first_not_of(' ') != string::npos)
+				{
+					space = false;
+				}
+
+				if (!space) // controlla che la stringa non sia solo spazi
 				{
 					WTP.push_back(temp.value);
+					//cout<<"**GetData** Got: -"<<temp.value<<endl;
 					temp.cleardata();
 				}
 				else
@@ -208,7 +235,8 @@ void GetData(vector<string>& WTP, const string& data)
 // crea la lista di oggetti del layout tabella
 int GetLayout(vector<string>& lay, const string& ct, const vector<Tag>& kt)
 {
-	string lyLine = targetString("tr", kt, ct);
+	int lung{ 0 };
+	string lyLine = targetString("tr", kt, ct, lung);
 	cout << endl << "**DEBUG** LayoutLine: " << lyLine << endl << endl;
 
 	if (lyLine.find("td") != string::npos)
@@ -222,11 +250,11 @@ int GetLayout(vector<string>& lay, const string& ct, const vector<Tag>& kt)
 	cout << "**DEBUG GetLayout (Elements: " << lay.size() << ")**" << endl;
 	for (auto s : lay)
 	{
-		cout<<"-"<<s<<"-"<< "  ";
+		cout << "-" << s << "-" << "  ";
 	}
 	cout << endl << endl;
 
-	return lyLine.length() + 12;
+	return lung;
 }
 
 
@@ -234,7 +262,7 @@ int GetLayout(vector<string>& lay, const string& ct, const vector<Tag>& kt)
 void SplitString(const string& tar, vector<string>& WTP, bool comma_split)
 {
 	string temp;
-	stringstream ss{ tar};
+	stringstream ss{ tar };
 	if (!comma_split)
 	{
 		while (ss >> temp)
@@ -244,77 +272,70 @@ void SplitString(const string& tar, vector<string>& WTP, bool comma_split)
 	}
 	if (comma_split)
 	{
-		while (getline(ss, temp, ';')) 
+		while (getline(ss, temp, ';'))
 		{
 			WTP.push_back(temp);
 		}
+	}
+}
+
+//sostituisce la stringa tosub nella stringa target
+void replaceAll(string& str, const string& from, const string& to) {
+	if (from.empty())
+		return;
+	size_t start_pos = 0;
+	while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+		str.replace(start_pos, from.length(), to);
+		start_pos += to.length();
 	}
 }
 
 //restituisce il numeri di righe e le righe
-int getRows(const string& target, vector<string>& WTP)
+int getRows(string& target, vector<string>& WTP)
 {
+
+	replaceAll(target, "</tr>", "</tr;");
+
 	vector<string> split;
-	SplitString(target, split, false);
+	SplitString(target, split, true);
 	string temp{};
 
-	int rows{ 0 };
-	bool write = false;
-	temp.clear();
-	for (auto t : split)
+	int rows = split.size();
+	WTP = split;
+
+	cout << "**DEBUG Code: Rows** " << split.size() << endl;
+	/*for (auto s : WTP)
 	{
-		//cout << "PEZZO: " << t<<endl;
-
-		if (t == "</tr>")
-		{
-			write = false;
-			WTP.push_back(temp);
-			temp.clear();
-
-		}
-		if (write)
-		{
-			temp += t;
-		}
-
-		if (t.find ("<tr") != string::npos )
-		{
-			++rows;
-			write =true;
-		}
+	cout << "-" << s << "-  "<<endl;
 	}
-
-	/*cout << "**DEBUG Code: Rows** " << endl;
-	for (auto s : WTP)
-	{
-		cout << "-" << s << "-  ";
-	}
-	cout << endl << endl;*/
-
+	cout << endl << endl;
+	*/
 	return rows;
 }
 
 //legge tutti i dati e li carica in una pseudotabella
-void CollectData(vector<vector<string>>& table,vector<string>& rows)
+void CollectData(vector<vector<string>>& table, vector<string>& rows)
 {
-	vector < string > temp ;
+	vector < string > temp;
 	temp.clear();
 	table.clear();
 	for (auto line : rows)
 	{
 		GetData(temp, line);
-		table.push_back(temp);
+		if (temp.size()>0)
+			table.push_back(temp);
+
 		temp.clear();
 	}
-	cout << "**DEBUG CollectData** Plain data" << endl;
+	/*cout << "**DEBUG CollectData** Plain data" << endl;
 	for (auto line : table)
 	{
-		for (auto item : line)
-		{
-			cout << "-" << item << "-   ";
-		}
-		cout<<endl;
+	for (auto item : line)
+	{
+	cout << "-" << item << "-   ";
 	}
+	cout<<endl;
+	}*/
 
 }
 
@@ -325,7 +346,7 @@ void SaveCleanData(const vector<string>& layout, const vector<vector<string>>& t
 	CleanFile.open("CleanData.txt");
 	CleanFile << "//Output File of Html Table builder\n";
 	CleanFile << "//\n";
-	CleanFile << "//Warning this app can't handle tables with empty cells or images!!\n";
+	CleanFile << "//Warning this app can't handle images and links!!!\n";
 	CleanFile << "//\n";
 	CleanFile << "Table layout:\n";
 	string ly;
@@ -333,7 +354,7 @@ void SaveCleanData(const vector<string>& layout, const vector<vector<string>>& t
 	{
 		ly += e + "  |  ";
 	}
-	CleanFile << ly<<endl;
+	CleanFile << ly << endl;
 
 	ly = "";
 	CleanFile << "Table data:\n";
@@ -343,7 +364,7 @@ void SaveCleanData(const vector<string>& layout, const vector<vector<string>>& t
 		{
 			ly += item + "  |  ";
 		}
-		CleanFile << ly<<endl;
+		CleanFile << ly << endl;
 		ly = "";
 	}
 
@@ -358,18 +379,18 @@ string AskNewLayout(vector<string>& layCurrent)
 {
 	string target;
 	do {
-		cout << "Current Layout: ";
+		cout << endl << "Current Layout: ";
 		for (auto e : layCurrent)
 		{
-			cout << e << " ";
+			cout << "-" << e << "- ";
 		}
 		cout << endl;
 
-		cout << endl<<"Insert a new layout:" << endl;
-		cout << "**NOTE** Layout MUST be: <new layout name>=<old layout name>(+\"Text\"+<another old layout name>+\"More Text\"). Use *none to create a empty column); and so on!" << endl;
-		cout << "**NOTE** In new layout you MUST NOT use spaces!!" << endl;
+		cout << endl << "Insert a new layout:" << endl;
+		cout << "**NOTE** Layout MUST be: <new layout name>=<old layout name>(+\"Text\"+<another old layout name>+\"More Text\"). Use \'*none\' to create a empty column); and so on!" << endl;
+		cout << "**NOTE** In new layout you MUST NOT use spaces and \'+\'!! (except for old layout names!)" << endl;
 		getline(cin, target);
-	} while (target.find("<") != string::npos && target.find(">") != string::npos && target.find(";") != string::npos);
+	} while (target.find(";") == string::npos);
 
 	return target;
 }
@@ -380,10 +401,10 @@ void EvaluateLayout(const string& target, vector<vector<Tag>>& LayInfo)
 	vector<string> nwLay;
 	SplitString(target, nwLay, true);
 	bool text = false;
-	Tag temp{"",'o'};
+	Tag temp{ "", 'o' };
 	vector<Tag> line;
 
-	for (auto item: nwLay)
+	for (auto item : nwLay)
 	{
 		for (int i = 0; i < item.length(); i++)
 		{
@@ -392,7 +413,7 @@ void EvaluateLayout(const string& target, vector<vector<Tag>>& LayInfo)
 				text = !text;
 				//cout << "Text: " << text << endl;
 			}
-			
+
 
 			if (text)
 			{
@@ -437,9 +458,9 @@ void EvaluateLayout(const string& target, vector<vector<Tag>>& LayInfo)
 	{
 		for (auto item : line)
 		{
-			cout << "-" << item.value <<"  Tipo: "<< item.type<< "-   ";
+			cout << "-" << item.value << "  Tipo: " << item.type << "-   ";
 		}
-		cout << endl<<endl;
+		cout << endl << endl;
 	}
 
 }
@@ -447,11 +468,15 @@ void EvaluateLayout(const string& target, vector<vector<Tag>>& LayInfo)
 //scrive il file output.html
 void  WriteOutPut(vector<vector<Tag>>& LayInfo, vector<vector<string>>& data, vector<string>& Olay)
 {
+	cout << "**LOG** Table result is going to written in output.html" << endl;
 	ofstream Output;
 	Output.open("Output.html");
-	Output << "<html><head><title>Html Builed Table</title></head><body>"<<endl<<endl;
+	Output << "<html><head><title>Html Builed Table</title></head><body>" << endl << endl;
+	Output << "<h3 align=center>Output File of Html Table Builder</h3>";
+	Output << "<h4 align=center style=\"color:red;\"><strong>WARNING: this app can't handle images and links!!!</strong></h4><br>";
+	Output << "<br><br>";
 	Output << "<table>" << endl;
-	string templ{};
+	string templ{ "" };
 
 	for (auto el : LayInfo)
 	{
@@ -471,7 +496,7 @@ void  WriteOutPut(vector<vector<Tag>>& LayInfo, vector<vector<string>>& data, ve
 
 				if (el.type != 'n')
 				{
-					
+
 					//cout << "NewLine" << endl;
 					if (el.type == 't') // se nella line ec'e un testo aggiungilo
 					{
@@ -488,6 +513,7 @@ void  WriteOutPut(vector<vector<Tag>>& LayInfo, vector<vector<string>>& data, ve
 								if (Olay[j] == el.value) // se lo trovi ricardati la sua posizione
 								{
 									pos = j;
+									//cout << "POS:" << pos << endl;
 								}
 
 
@@ -496,7 +522,7 @@ void  WriteOutPut(vector<vector<Tag>>& LayInfo, vector<vector<string>>& data, ve
 						else
 						{
 							pos = -2;
-							cout << "Empty column" << endl;
+							//cout << "Empty column" << endl;
 						}
 
 						if (pos != -1 && pos != -2)
@@ -522,10 +548,10 @@ void  WriteOutPut(vector<vector<Tag>>& LayInfo, vector<vector<string>>& data, ve
 		templ = "";
 	}
 
-	Output <<"</table>" << endl;
+	Output << "</table>" << endl;
 	Output << endl << endl << "</body></html>";
 	Output.close();
-	cout << "Table result has been written in output.html" << endl;
+	cout << "**LOG** Table result has been written in output.html" << endl;
 }
 
 
@@ -544,23 +570,24 @@ int main()
 	DefineTableTags(KnownTags);
 
 	FileContent = ReadFile();
-	cout<<endl<<"**DEBUG** Content: " << FileContent<<endl<<endl;
+	//cout<<endl<<"**DEBUG** Content: " << FileContent<<endl<<endl;
 
 	if (FileContent != "null")
 	{
 		TBegin = AskTarget();
-		Content = targetString(TBegin, KnownTags, FileContent);
+		int l;
+		Content = targetString(TBegin, KnownTags, FileContent, l);
 		if (Content != "null")
 		{
-			cout << endl << "**DEBUG** TargetList: " << Content << endl << endl;
-			FileContent= "";
+			//cout << endl << "**DEBUG** TargetList: " << Content << endl << endl;
+			FileContent = "";
 			int endlayout = GetLayout(layout, Content, KnownTags);
 			Content = Content.substr(endlayout);
-			cout << endl << endl << "**DEBUG** Data only (deleted: "<< endlayout<<") :"<<Content<<endl<<endl;
+			cout << endl << endl << "**DEBUG** Data only (deleted: " << endlayout << ")"; // << Content << endl << endl;
 		}
 
 		int righe = getRows(Content, rows);
-		cout <<"**DEBUG** Rows:" << righe << endl << endl;
+		cout << "**DEBUG** Rows:" << righe << endl << endl;
 
 		CollectData(Table, rows);
 
@@ -568,7 +595,7 @@ int main()
 		string newLay = AskNewLayout(layout);
 		EvaluateLayout(newLay, LayInfo);
 
-		WriteOutPut(LayInfo,Table,layout);
+		WriteOutPut(LayInfo, Table, layout);
 
 
 	}
