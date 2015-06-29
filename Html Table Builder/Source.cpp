@@ -1,4 +1,4 @@
-//***********************************************************************************************************************
+﻿//***********************************************************************************************************************
 //
 //  Html Table Builder
 //  Developed by _Ricky
@@ -56,6 +56,7 @@ void DefineTableTags(vector<Tag>& kT)
 	kT.push_back(t);
 }
 
+
 //legge il file input.txt
 string ReadFile()
 {
@@ -108,21 +109,21 @@ string CloseTag(const string& target, const vector<Tag>& list)
 		if (target.find(t.value) != string::npos)
 		{
 			found = true;
-			return "</" + t.value + ">";
+			return "</" + t.value;
 		}
 	}
 
 	if (!found)
 	{
 		cout << "**WARNING** Unknown tag: " << target << endl << "**WARNING** Maybe close tag is: </" << target << ">" << endl;
-		return "</" + target + ">";
+		return "</" + target;
 
 	}
 }
 
 
 //riduce la stringa al blocco interessato da analizzare
-string targetString(const string& begin, const vector<Tag>& kt, const string& FC, int& lung)
+string targetString(const string& begin, const vector<Tag>& kt, const string& FC, int& lung, bool advanced)
 {
 
 	string closeT = CloseTag(begin, kt); // restituisce il tag di chiusura opposto a quello inserito
@@ -150,10 +151,10 @@ string targetString(const string& begin, const vector<Tag>& kt, const string& FC
 	{
 		string result;
 		bool copy = false;
-		cout << endl << "**DEBUG Code: TargetString** Begin: " << InitPos << " End: " << EndPos << endl << endl;
+	//	cout << endl << "**DEBUG Code: TargetString** Begin: " << InitPos << " End: " << EndPos << endl << endl;
 		for (int i = InitPos + begin.length() + 1; i < EndPos; i++) // nella copia elimina tag di apertura
 		{
-			if (FC[i] == '<')
+			if (FC[i] == '<' || advanced)
 			{
 				copy = true;
 			}
@@ -182,7 +183,7 @@ void GetData(vector<string>& WTP, const string& data)
 		{
 			write = false;
 		}
-		// controlla che se � presente <td></td> aggiunge un dato vuoto
+		// controlla che se è presente <td></td> aggiunge un dato vuoto
 		if (data[i] == '<' && data[i + 1] == 't' && data[i + 2] == 'd' && data[i + 3] == '>' && data[i + 4] == '<' && data[i + 5] == '/' && data[i + 6] == 't' && data[i + 7] == 'd' && data[i + 8] == '>')
 		{
 			WTP.push_back("");
@@ -232,11 +233,13 @@ void GetData(vector<string>& WTP, const string& data)
 	}
 }
 
+void GetDataAdvanced(vector<string>& WTP, const string& data, vector<Tag>& kt, int lylung);
+
 // crea la lista di oggetti del layout tabella
 int GetLayout(vector<string>& lay, const string& ct, const vector<Tag>& kt)
 {
 	int lung{ 0 };
-	string lyLine = targetString("tr", kt, ct, lung);
+	string lyLine = targetString("tr", kt, ct, lung, false);
 	cout << endl << "**DEBUG** LayoutLine: " << lyLine << endl << endl;
 
 	if (lyLine.find("td") != string::npos)
@@ -314,18 +317,21 @@ int getRows(string& target, vector<string>& WTP)
 }
 
 //legge tutti i dati e li carica in una pseudotabella
-void CollectData(vector<vector<string>>& table, vector<string>& rows)
+void CollectData(vector<vector<string>>& table, vector<string>& rows, vector<Tag>& kt, int lylung)
 {
 	vector < string > temp;
 	temp.clear();
 	table.clear();
+	int cont = { 0 };
 	for (auto line : rows)
 	{
-		GetData(temp, line);
+		cout << cont << "- ";
+		GetDataAdvanced(temp, line, kt, lylung);
 		if (temp.size()>0)
 			table.push_back(temp);
 
 		temp.clear();
+		cont++;
 	}
 	/*cout << "**DEBUG CollectData** Plain data" << endl;
 	for (auto line : table)
@@ -555,6 +561,43 @@ void  WriteOutPut(vector<vector<Tag>>& LayInfo, vector<vector<string>>& data, ve
 }
 
 
+
+//versione piu avanzata della getdata gia presente
+void GetDataAdvanced(vector<string>& WTP, const string& data, vector<Tag>& kt, int lylung)
+{
+	int lung;
+	//cout << "**Riga**: " << data<<endl;
+	vector<string> temp;
+	string row = targetString("tr", kt, data, lung, false);
+	replaceAll(row, "</td>", "</td;");
+	vector<string> split;
+	SplitString(row, split, true);
+	cout << "**DATA** Elements: " << split.size()<<endl;
+	for (auto e: split)
+	{
+
+		string t = targetString("td", kt, e, lung, true);
+		//cout << "puched: " << t << endl;
+
+		if (t == "null")
+			cout << "**ERROR** argument line found. To prevent furute errors this line will not be read!" << endl;
+		else
+			temp.push_back(t);
+	}
+
+	if (temp.size() != lylung)
+	{
+		cout << "**ERROR** Line size not match with layout, skipping line to prevent errors!" << endl;
+		cout << data << endl;
+	}
+	else
+	{
+		WTP = temp;
+	}
+
+
+}
+
 int main()
 {
 	vector<Tag> KnownTags;
@@ -576,7 +619,7 @@ int main()
 	{
 		TBegin = AskTarget();
 		int l;
-		Content = targetString(TBegin, KnownTags, FileContent, l);
+		Content = targetString(TBegin, KnownTags, FileContent, l, false);
 		if (Content != "null")
 		{
 			//cout << endl << "**DEBUG** TargetList: " << Content << endl << endl;
@@ -589,7 +632,7 @@ int main()
 		int righe = getRows(Content, rows);
 		cout << "**DEBUG** Rows:" << righe << endl << endl;
 
-		CollectData(Table, rows);
+		CollectData(Table, rows, KnownTags, layout.size());
 
 		SaveCleanData(layout, Table);
 		string newLay = AskNewLayout(layout);
