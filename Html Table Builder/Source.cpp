@@ -51,7 +51,7 @@ void DefineTableTags(vector<Tag>& kT)
 
 	t = Tag{ "/tbody", 'h' };
 	kT.push_back(t);
-	 
+
 	t = Tag{ "tbody", 'h' };
 	kT.push_back(t);
 }
@@ -66,7 +66,7 @@ string ReadFile()
 
 	if (ifstream(path))
 	{
-		cout << "**LOG Code: ReadFile**Begin reading INPUT.TXT" << endl;
+		cout << "**** Begin reading INPUT.TXT" << endl;
 		ifstream f(path);
 		string line{ "" };
 
@@ -74,11 +74,11 @@ string ReadFile()
 		{
 			result += line;
 		}
-		cout << "**LOG Code: ReadFile**INPUT.TXT sucessfully read" << endl;
+		cout << "**LOG** INPUT.TXT sucessfully read" << endl;
 	}
 	else
 	{
-		cout << "**ERROR Code: ReadFile** File input.txt doesn't exist! Create it and fill it with html code to use!" << endl;
+		cout << "**ERROR** File input.txt doesn't exist! Create it and fill it with html code to use!" << endl;
 		result = "null";
 	}
 
@@ -134,12 +134,12 @@ string targetString(const string& begin, const vector<Tag>& kt, const string& FC
 	//valutazione dei risultati delle ricerche
 	if (InitPos == string::npos)
 	{
-		cout << "**ERROR Code: TargetString** can't find: " << begin << endl;
+		cout << "**ERROR** can't find: " << begin << endl;
 	}
 
 	if (EndPos == string::npos)
 	{
-		cout << "**ERROR Code: TagetString** can't find: " << closeT << endl;
+		cout << "**ERROR** can't find: " << closeT << endl;
 
 	}
 	if ((EndPos == string::npos || InitPos == string::npos) || (EndPos == string::npos && InitPos == string::npos))
@@ -151,7 +151,7 @@ string targetString(const string& begin, const vector<Tag>& kt, const string& FC
 	{
 		string result;
 		bool copy = false;
-	//	cout << endl << "**DEBUG Code: TargetString** Begin: " << InitPos << " End: " << EndPos << endl << endl;
+		//	cout << endl << "**DEBUG Code: TargetString** Begin: " << InitPos << " End: " << EndPos << endl << endl;
 		for (int i = InitPos + begin.length() + 1; i < EndPos; i++) // nella copia elimina tag di apertura
 		{
 			if (FC[i] == '<' || advanced)
@@ -176,7 +176,7 @@ void GetData(vector<string>& WTP, const string& data)
 {
 	Tag temp{ "", 'd' };
 	int timer{ 0 };
-	bool write = false;
+	bool write = true;
 	for (int i = 0; i < data.length(); i++)
 	{
 		if (data[i] == '<')
@@ -199,11 +199,11 @@ void GetData(vector<string>& WTP, const string& data)
 				bool space = true;
 				/*for (auto el : temp.value)
 				{
-					if (!isspace(el))
-					{
-						space = false;
-					}
-				
+				if (!isspace(el))
+				{
+				space = false;
+				}
+
 
 				}*/
 
@@ -215,7 +215,7 @@ void GetData(vector<string>& WTP, const string& data)
 				if (!space) // controlla che la stringa non sia solo spazi
 				{
 					WTP.push_back(temp.value);
-					//cout<<"**GetData** Got: -"<<temp.value<<endl;
+					//cout<<"**GetData** Got: -"<<temp.value<<" from: "<<data<<endl;
 					temp.cleardata();
 				}
 				else
@@ -233,7 +233,84 @@ void GetData(vector<string>& WTP, const string& data)
 	}
 }
 
-void GetDataAdvanced(vector<string>& WTP, const string& data, vector<Tag>& kt, int lylung);
+//legge un segmento di stringa e ene restituisce il contenuto pulito
+string GetCleanData(const string& data, const string& separator)
+{
+	Tag temp{ "", 'd' };
+	string line;
+	bool write = false;
+	int ct{ 0 };
+
+
+	for (int i = 0; i < data.length(); i++)
+	{
+		if (data[i] == '<')
+		{
+			write = false;
+		}
+		// controlla che se è presente <td></td> aggiunge un dato vuoto
+		if (data[i] == '<' && data[i + 1] == 't' && data[i + 2] == 'd' && data[i + 3] == '>' && data[i + 4] == '<' && data[i + 5] == '/' && data[i + 6] == 't' && data[i + 7] == 'd' && data[i + 8] == '>')
+		{
+			line += "";
+		}
+
+
+		if (write)
+		{
+			temp.push(data[i]);
+
+			if (data[i + 1] == '<')
+			{
+				bool space = true;
+				/*for (auto el : temp.value)
+				{
+				if (!isspace(el))
+				{
+				space = false;
+				}
+
+
+				}*/
+
+				if (temp.value.find_first_not_of(' ') != string::npos)
+				{
+					space = false;
+				}
+
+				if (!space) // controlla che la stringa non sia solo spazi
+				{
+					if (ct<1)
+						line += temp.value;
+					else
+						line += separator + temp.value;
+
+					//cout<<"**GetData** Got: -"<<temp.value<<" from: "<<data<<endl;
+					temp.cleardata();
+
+					ct++;
+				}
+				else
+				{
+					temp.cleardata();
+				}
+			}
+		}
+
+		if (data[i] == '>')
+		{
+			write = true;
+		}
+
+	}
+
+	return line;
+}
+
+
+
+void GetDataAdvanced(vector<string>& WTP, const string& data, vector<Tag>& kt, int lylung, const string& separator);
+
+
 
 // crea la lista di oggetti del layout tabella
 int GetLayout(vector<string>& lay, const string& ct, const vector<Tag>& kt)
@@ -244,13 +321,13 @@ int GetLayout(vector<string>& lay, const string& ct, const vector<Tag>& kt)
 
 	if (lyLine.find("td") != string::npos)
 	{
-		cout << "**WARNING GetLayout** Cant find layout! Using 1st line as layout!" << endl;
+		cout << "**WARNING** Cant find layout! Using 1st line as layout!" << endl;
 
 	}
 
 	GetData(lay, lyLine);
 
-	cout << "**DEBUG GetLayout (Elements: " << lay.size() << ")**" << endl;
+	cout << "**DEBUG** GetLayout (Elements: " << lay.size() << ")" << endl;
 	for (auto s : lay)
 	{
 		cout << "-" << s << "-" << "  ";
@@ -262,24 +339,25 @@ int GetLayout(vector<string>& lay, const string& ct, const vector<Tag>& kt)
 
 
 
-void SplitString(const string& tar, vector<string>& WTP, bool comma_split)
+void SplitString(const string& tar, vector<string>& WTP, bool bar_split)
 {
 	string temp;
 	stringstream ss{ tar };
-	if (!comma_split)
+	if (!bar_split)
 	{
 		while (ss >> temp)
 		{
 			WTP.push_back(temp);
 		}
 	}
-	if (comma_split)
+	if (bar_split)
 	{
-		while (getline(ss, temp, ';'))
+		while (getline(ss, temp, '|'))
 		{
 			WTP.push_back(temp);
 		}
 	}
+
 }
 
 //sostituisce la stringa tosub nella stringa target
@@ -297,7 +375,7 @@ void replaceAll(string& str, const string& from, const string& to) {
 int getRows(string& target, vector<string>& WTP)
 {
 
-	replaceAll(target, "</tr>", "</tr;");
+	replaceAll(target, "</tr>", "</tr|");
 
 	vector<string> split;
 	SplitString(target, split, true);
@@ -306,7 +384,7 @@ int getRows(string& target, vector<string>& WTP)
 	int rows = split.size();
 	WTP = split;
 
-	cout << "**DEBUG Code: Rows** " << split.size() << endl;
+	cout << "**DEBUG** Rows: " << split.size() << endl;
 	/*for (auto s : WTP)
 	{
 	cout << "-" << s << "-  "<<endl;
@@ -316,6 +394,31 @@ int getRows(string& target, vector<string>& WTP)
 	return rows;
 }
 
+
+// chiede all'utente da che tag vuole che il programma legga
+string Datakind()
+{
+	string target;
+	do {
+		cout << "Do you want clean data: yes/no" << endl;
+		cout << "**NOTE** This means no html tags inside table data! (This fuction is not really stable and can lose data! Its reccommend to use the standard one!)" << endl;
+		getline(cin, target);
+
+		if (target == "yes" || target == "no")
+			break;
+		//cout<<"-"<<target<<"-"<<endl;
+	} while (true);
+
+	if (target == "yes")
+	{
+		cout << "Using default separator: <br >" << endl;
+		target = "<br >";
+	}
+	else target = "null";
+
+	return target;
+}
+
 //legge tutti i dati e li carica in una pseudotabella
 void CollectData(vector<vector<string>>& table, vector<string>& rows, vector<Tag>& kt, int lylung)
 {
@@ -323,10 +426,15 @@ void CollectData(vector<vector<string>>& table, vector<string>& rows, vector<Tag
 	temp.clear();
 	table.clear();
 	int cont = { 0 };
+
+	string separator;
+
+	separator = Datakind();
+
 	for (auto line : rows)
 	{
 		cout << cont << "- ";
-		GetDataAdvanced(temp, line, kt, lylung);
+		GetDataAdvanced(temp, line, kt, lylung, separator);
 		if (temp.size()>0)
 			table.push_back(temp);
 
@@ -352,7 +460,7 @@ void SaveCleanData(const vector<string>& layout, const vector<vector<string>>& t
 	CleanFile.open("CleanData.txt");
 	CleanFile << "//Output File of Html Table builder\n";
 	CleanFile << "//\n";
-	CleanFile << "//Warning this app can't handle images and links!!!\n";
+	CleanFile << "//Warning: always check your data before using it!!!\n";
 	CleanFile << "//\n";
 	CleanFile << "Table layout:\n";
 	string ly;
@@ -385,7 +493,7 @@ string AskNewLayout(vector<string>& layCurrent)
 {
 	string target;
 	do {
-		cout << endl << "Current Layout: ";
+		cout << endl << "Current Layout: (- make you understand where a layout name ends or begins)";
 		for (auto e : layCurrent)
 		{
 			cout << "-" << e << "- ";
@@ -393,10 +501,10 @@ string AskNewLayout(vector<string>& layCurrent)
 		cout << endl;
 
 		cout << endl << "Insert a new layout:" << endl;
-		cout << "**NOTE** Layout MUST be: <new layout name>=<old layout name>(+\"Text\"+<another old layout name>+\"More Text\"). Use \'*none\' to create a empty column); and so on!" << endl;
+		cout << "**NOTE** Layout MUST be: <new layout name>=<old layout name>(+\"Text\"+<another old layout name>+\"More Text\"). Use \'*none\' to create a empty column)| and so on!" << endl;
 		cout << "**NOTE** In new layout you MUST NOT use spaces and \'+\'!! (except for old layout names!)" << endl;
 		getline(cin, target);
-	} while (target.find(";") == string::npos);
+	} while (target.find("|") == string::npos);
 
 	return target;
 }
@@ -459,12 +567,12 @@ void EvaluateLayout(const string& target, vector<vector<Tag>>& LayInfo)
 	}
 
 
-	cout << "**DEBUG New Layout Info**" << endl;
+	cout << "**DEBUG** New Layout Info" << endl;
 	for (auto line : LayInfo)
 	{
 		for (auto item : line)
 		{
-			cout << "-" << item.value << "  Tipo: " << item.type << "-   ";
+			cout << "-" << item.value << "  Type: " << item.type << "-   ";
 		}
 		cout << endl << endl;
 	}
@@ -479,7 +587,7 @@ void  WriteOutPut(vector<vector<Tag>>& LayInfo, vector<vector<string>>& data, ve
 	Output.open("Output.html");
 	Output << "<html><head><title>Html Builed Table</title></head><body>" << endl << endl;
 	Output << "<h3 align=center>Output File of Html Table Builder</h3>";
-	Output << "<h4 align=center style=\"color:red;\"><strong>WARNING: this app can't handle images and links!!!</strong></h4><br>";
+	Output << "<h4 align=center style=\"color:red;\"><strong>WARNING: always check your data before using it, look at CleanData.txt for all data used to build this table!!!</strong></h4><br>";
 	Output << "<br><br>";
 	Output << "<table>" << endl;
 	string templ{ "" };
@@ -563,24 +671,32 @@ void  WriteOutPut(vector<vector<Tag>>& LayInfo, vector<vector<string>>& data, ve
 
 
 //versione piu avanzata della getdata gia presente
-void GetDataAdvanced(vector<string>& WTP, const string& data, vector<Tag>& kt, int lylung)
+void GetDataAdvanced(vector<string>& WTP, const string& data, vector<Tag>& kt, int lylung, const string& separator)
 {
 	int lung;
 	//cout << "**Riga**: " << data<<endl;
 	vector<string> temp;
 	string row = targetString("tr", kt, data, lung, false);
-	replaceAll(row, "</td>", "</td;");
+	replaceAll(row, "</td>", "</td|");
 	vector<string> split;
 	SplitString(row, split, true);
-	cout << "**DATA** Elements: " << split.size()<<endl;
-	for (auto e: split)
+	cout << "**DATA** Elements: " << split.size() << endl;
+	for (auto e : split)
 	{
+		string t;
 
-		string t = targetString("td", kt, e, lung, true);
+		if (separator != "null")
+		{
+			t = GetCleanData(e, separator);
+		}
+		else
+		{
+			t = targetString("td", kt, e, lung, true);
+		}
+
 		//cout << "puched: " << t << endl;
-
 		if (t == "null")
-			cout << "**ERROR** argument line found. To prevent furute errors this line will not be read!" << endl;
+			cout << "**ERROR** argument line not found. To prevent furute errors this line will not be read!" << endl;
 		else
 			temp.push_back(t);
 	}
