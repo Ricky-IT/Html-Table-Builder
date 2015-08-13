@@ -1,1 +1,1 @@
-All information can be foun on the wiki/ Tutte le informazioni possono essere trovate sulla wiki: [WIKI] (https://gitlab.com/_Ricky/Html-Table-Cleaner/wikis/home)
+Visit the wiki to know how the program works / Visita la wiki per capire come funziona il programma -> [WIKI] (https://gitlab.com/_Ricky/Html-Table-Builder/wikis/home)
