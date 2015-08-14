@@ -6,4 +6,4 @@ The program is designed to work with Windows, Linux and Mac.
 
 Visit the wiki to know how the program works / Visita la wiki per capire come funziona il programma -> [WIKI] (https://github.com/Ricky-IT/Html-Table-Builder/wiki)
 
-More examples on [Official Site] (http://html-table-builder.tk/)
+Complete example on [Official Site] (http://html-table-builder.tk/)
