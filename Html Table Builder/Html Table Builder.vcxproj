@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -11,11 +11,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source.cpp" />
-    <ClCompile Include="Tag.cpp" />
+    <ClCompile Include="Costants.cpp" />
+    <ClCompile Include="Html_Reader.cpp" />
+    <ClCompile Include="Html_Writer.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Element.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Tag.h" />
+    <ClInclude Include="Costants.h" />
+    <ClInclude Include="Html_Reader.h" />
+    <ClInclude Include="Html_Writer.h" />
+    <ClInclude Include="Element.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4AF1715A-7668-4DBF-B995-43C592C44683}</ProjectGuid>
@@ -25,13 +31,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v120</PlatformToolset>
+    <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>

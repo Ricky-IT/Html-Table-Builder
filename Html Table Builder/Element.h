@@ -3,16 +3,15 @@
 #include "iostream"
 #include "string"
 
-class Tag
+class Element
 {
 public:
 
 	std::string value;
 	char type;
 
-	Tag(std::string val, char ty);
+	Element(std::string val, char t);
 
-	~Tag();
 
 	void push(char item);
 

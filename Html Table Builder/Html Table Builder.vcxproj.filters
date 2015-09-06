@@ -5,26 +5,58 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Header Files">
+    <Filter Include="Html">
+      <UniqueIdentifier>{a94f4109-027d-4d66-925e-a5d93a4dba99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Html\Header">
+      <UniqueIdentifier>{058325bf-a5e1-4e8b-8fa9-a635e54be7a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Html\Source">
+      <UniqueIdentifier>{6b86d575-2dea-4806-b332-13871f711dc3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility Class">
+      <UniqueIdentifier>{96c95347-2ac8-423b-ac16-a24a9f92ca43}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility Class\Header">
+      <UniqueIdentifier>{61614303-9653-410b-ab81-6aae6a26c799}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility Class\Source">
+      <UniqueIdentifier>{f2cb4d72-e11b-43c5-b261-61ee381b022d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility Class\Header\Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source.cpp">
+    <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Tag.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Html_Reader.cpp">
+      <Filter>Html\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Html_Writer.cpp">
+      <Filter>Html\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Element.cpp">
+      <Filter>Utility Class\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Costants.cpp">
+      <Filter>Utility Class\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Tag.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Costants.h">
+      <Filter>Utility Class\Header\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Html_Reader.h">
+      <Filter>Html\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Html_Writer.h">
+      <Filter>Html\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Element.h">
+      <Filter>Utility Class\Header</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
