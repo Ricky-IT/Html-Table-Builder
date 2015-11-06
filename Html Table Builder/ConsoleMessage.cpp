@@ -22,27 +22,27 @@ void ConsoleMessage::WelcomeMessage()
 
 void ConsoleMessage::Message(std::string message)
 {
-	ColoredMessage(message + "\n", Color::green);
-	WriteOnLogFile("DONE: "+message + "\n");
+	ColoredMessage(message + "\n\n", Color::green);
+	WriteOnLogFile("DONE: "+message + "\n\n");
 }
 
 void ConsoleMessage::Log(std::string message)
 {
-	std::string output = "LOG: " + message + "\n";
+	std::string output = "LOG: " + message + "\n\n";
 	std::cout << output;
 	WriteOnLogFile(output);
 }
 
 void ConsoleMessage::LogWarning(std::string message)
 {
-	std::string output = "WARNING: " + message + "\n";
+	std::string output = "WARNING: " + message + "\n\n";
 	ColoredMessage(output, Color::yellow);
 	WriteOnLogFile(output);
 }
 
 void ConsoleMessage::LogError(std::string message)
 {
-	std::string output = "ERROR: " + message + "\n";
+	std::string output = "ERROR: " + message + "\n\n";
 	ColoredMessage(output, Color::red);
 	WriteOnLogFile(output);
 }

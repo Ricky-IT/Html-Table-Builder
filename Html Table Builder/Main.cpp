@@ -39,13 +39,13 @@ std::string GetInputFileName()
 
 int main()
 {
-	ConsoleMessage messager;
-	messager.WelcomeMessage();
+	ConsoleMessage msg;
+	msg.WelcomeMessage();
 	TableData data;
 
 	if (data.ReadDataFromFile(GetInputFileName()))
 	{
-	    
+		data.Analyze();
 	}
 
 	std::cout << "Press a key (a-z, 0-9) and enter to exit";
