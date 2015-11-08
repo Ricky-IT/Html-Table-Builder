@@ -47,7 +47,19 @@ void TableData::Analyze()
 		int begin =-1, end=-1;
 		SearchTableInPlainData(begin,end);
 		PlainData = SelectTable(begin, end, PlainData);
+		PlainData = Helper::ReplaceAllString(PlainData, "</tr>", "</tr|-|;"); // prepare for splitting
+		//msg.Log("After separator split: " + PlainData);
+		std::vector<std::string> temp = Helper::SplitText(PlainData, "|-|");
+		msg.Message("Table Lines: " + std::to_string(temp.size()));
 
+		//create the table
+		int i = 0; // line counter
+		for (auto l : temp)
+		{
+			Line line = Line(l, i);
+			i++;
+		}
+		msg.Message("Read: " + std::to_string(i));
 
 	}
 	catch (std::exception e)
