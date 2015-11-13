@@ -19,6 +19,8 @@ public:
 	int LineNumber = -1;
 
 	enum  ReadMode {Normal, Clean};
+	//get all data in the line
+	std::string GetCleanDataString();
 private:
 	ConsoleMessage msg;
 	//read line and get its content divided into cells
@@ -35,6 +37,8 @@ private:
 
 	//get cells content keeping html tags inside
 	std::vector<std::string> NormalRead(const std::string& line);
+
+
 
 };
 

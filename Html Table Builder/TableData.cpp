@@ -1,7 +1,5 @@
 #include "TableData.h"
 
-
-
 TableData::TableData()
 {
 }
@@ -10,6 +8,7 @@ TableData::TableData()
 TableData::~TableData()
 {
 }
+
 
 bool TableData::ReadDataFromFile(std::string InputFileName)
 {
@@ -27,7 +26,6 @@ bool TableData::ReadDataFromFile(std::string InputFileName)
 			PlainData += line;
 			linesRead++;
 		}
-		
 	}
 	catch (std::exception e)
 	{
@@ -38,6 +36,7 @@ bool TableData::ReadDataFromFile(std::string InputFileName)
 	msg.Message("File read sucessfully!\nLines read: " + std::to_string(linesRead));
 	return true;
 }
+
 
 void TableData::Analyze()
 {
@@ -50,23 +49,24 @@ void TableData::Analyze()
 		PlainData = Helper::ReplaceAllString(PlainData, "</tr>", "</tr|-|;"); // prepare for splitting
 		//msg.Log("After separator split: " + PlainData);
 		std::vector<std::string> temp = Helper::SplitText(PlainData, "|-|");
-		msg.Message("Table Lines: " + std::to_string(temp.size()));
+		msg.Message("Table lines found: " + std::to_string(temp.size()));
 
 		//create the table
 		int i = 0; // line counter
 		for (auto l : temp)
 		{
 			Line line = Line(l, i);
+			Table.push_back(line);
 			i++;
 		}
-		msg.Message("Read: " + std::to_string(i));
-
+		msg.Message("Readed: " + std::to_string(i) +" lines");
 	}
 	catch (std::exception e)
 	{
 		msg.LogError(e.what());
 	}
 }
+
 
 void TableData::SearchTableInPlainData(int& beginpos, int& endpos)
 {
@@ -114,6 +114,7 @@ void TableData::SearchTableInPlainData(int& beginpos, int& endpos)
 
 }
 
+
 std::string TableData::SelectTable(int& begin, int& end, std::string& table)
 {
 	std::string temp = table.substr(begin, end - begin);
@@ -125,4 +126,23 @@ std::string TableData::SelectTable(int& begin, int& end, std::string& table)
 	msg.Log("Selected: " + std::to_string(end - begin -pos) + " characters");
 	msg.Log("Selected table: " + temp);
 	return temp;
+}
+
+void TableData::WriteCleanData()
+{
+	try
+	{
+		std::ofstream FileOutput("CleanData.txt");
+		//msg.Log("Table lines: " + std::to_string(Table.size()));
+		for (auto line : Table)
+		{
+			FileOutput << line.GetCleanDataString() << std::endl;
+		}
+		FileOutput.close();
+		msg.Message("Clean data has been written on CleanData.txt!");
+	}
+	catch(std::exception e)
+	{
+		msg.LogError("Can't create CleanData.txt");
+	}
 }

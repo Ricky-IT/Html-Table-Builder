@@ -46,6 +46,7 @@ int main()
 	if (data.ReadDataFromFile(GetInputFileName()))
 	{
 		data.Analyze();
+		data.WriteCleanData();
 	}
 
 	std::cout << "Press a key (a-z, 0-9) and enter to exit";

@@ -20,8 +20,12 @@ public:
 
 	//read plaindata from input file
 	bool ReadDataFromFile(std::string InputFileName);
+
 	//begin analyzing the content of plain data
 	void Analyze();
+
+	//generate output with clean data
+	void WriteCleanData();
 
 protected:
 	ConsoleMessage msg;

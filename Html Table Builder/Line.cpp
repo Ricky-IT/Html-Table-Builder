@@ -25,7 +25,7 @@ void Line::DecodeLine(std::string line)
 		}
 
 		isLayout = CheckIfLayout(line);
-		GetLineContent(line, ReadMode::Normal); //todo: add suppot for clean reading
+		Cells = GetLineContent(line, ReadMode::Normal); //todo: add suppot for clean reading
 
 	}
 	catch(std::exception e)
@@ -39,7 +39,7 @@ std::string Line::RemoveLineTags(std::string line)
 	int begin = line.find(">") + 1; // finds first tag end
 	int end = line.find("</tr");
 	line = line.substr(begin, end - begin);
-	msg.Log("Line: " + std::to_string(LineNumber) + " Delta chars: " + std::to_string(end - begin) + " \nLine Content: " + line);
+	//msg.Log("Line: " + std::to_string(LineNumber) + " Delta chars: " + std::to_string(end - begin) + " \nLine Content: " + line);
 	return line;
 }
 
@@ -61,7 +61,7 @@ std::vector<std::string> Line::GetLineContent(const std::string& input, ReadMode
 	if (rm == ReadMode::Normal)
 	{	
 		Content = NormalRead(input);
-		Helper::PrintStringList(Content);
+		//Helper::PrintStringList(Content);
 	}
 
 
@@ -96,5 +96,19 @@ std::vector<std::string> Line::NormalRead(const std::string& input)
 	}
 
 	return Content;
+}
+
+std::string Line::GetCleanDataString()
+{
+	std::string res;
+	if (isLayout)
+		res += "Layout: ";
+	for (auto el : Cells)
+	{
+		res += " | " + el + " | ";
+	}
+	if (isLayout)
+		res += "\n\n";
+	return res;
 }
 
