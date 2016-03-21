@@ -13,5 +13,6 @@ The wiki is available in English and Italian.
 
 ## New version in development
 I'm building a completely new and better version of this program.
+
 The program will be completely redesigned to grant more flexibility and more functionalities, so I decided to put it into a new repo [that can be found here] (https://github.com/RickyCoDev/Html_Table_Editor)
 
