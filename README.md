@@ -8,7 +8,7 @@ The program is designed to work with Windows, Linux and Mac.
 # How to use
 The usage of this program is easy, but little spelling or sintax mistakes can cause big errors.
 
-To learn how to correcly use this tool visit the [WIKI] (https://github.com/Ricky-IT/Html-Table-Builder/wiki).
+To learn how to correcly use this tool visit the [WIKI] (https://github.com/RickyCoDev/Html-Table-Builder/wiki).
 The wiki is available in English and Italian.
 
 ## New version in development
